@@ -8,7 +8,7 @@ Function definitions derived from graph declarations.
 
 I was at [Strange Loop 2012] in Saint Louis, where the [Prismatic] team did a talk about their [Graph] library for building up complex processes in a declarative style. Prismatic has not yet released Graph as open-source, and I wanted something like it, so I wrote my own.
 
-[Strang Loop 2012]: https://thestrangeloop.com/
+[Strange Loop 2012]: https://thestrangeloop.com/
 [Prismatic]: http://getprismatic.com/
 [Graph]: http://blog.getprismatic.com/blog/2012/10/1/prismatics-graph-at-strange-loop.html
 
