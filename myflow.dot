@@ -1,0 +1,11 @@
+digraph myflow {
+   beta -> gamma ;
+   gamma -> epsilon ;
+   gamma -> result ;
+   gamma -> delta ;
+   alpha -> gamma ;
+   alpha -> delta ;
+   epsilon -> result ;
+   delta -> epsilon ;
+   delta -> result ;
+}
