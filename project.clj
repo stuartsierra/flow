@@ -1,4 +1,4 @@
-(defproject com.stuartsierra/flow "0.0.1-SNAPSHOT"
+(defproject com.stuartsierra/flow "0.0.1"
   :description "Function definitions derived from graph declarations"
   :url "https://github.com/stuartsierra/flow"
   :license {:name "Eclipse Public License"
