@@ -1,7 +1,8 @@
-# flow
+# Flow
 
 Function definitions derived from graph declarations.
 
+**ALPHA RELEASE**
 
 
 ## Introduction ##
@@ -16,6 +17,15 @@ I also wanted to do something new with the [dependency graph] library I wrote fo
 
 [dependency graph]: https://github.com/clojure/tools.namespace/blob/tools.namespace-0.2.0/src/main/clojure/clojure/tools/namespace/dependency.clj
 [tools.namespace]: https://github.com/clojure/tools.namespace
+
+
+## Releases ## 
+
+Flow is on [Clojars](https://clojars.org/com.stuartsierra/flow)
+
+Leiningen dependency information:
+
+    [com.stuartsierra/flow "0.0.1"]
 
 
 ## Usage ##
