@@ -133,7 +133,7 @@ Then run Graphviz:
 
 And see the results:
 
-![flow visualization]()
+![flow visualization](https://raw.github.com/stuartsierra/flow/master/myflow.png)
 
 [Graphviz]: http://www.graphviz.org/
 
