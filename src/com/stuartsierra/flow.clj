@@ -59,23 +59,25 @@
   "Dynamically executes a flow to compute the values of symbols in
   output-syms given an input-map from symbols to values. Returns a map
   from symbols to their computed values."
-  [flow input-map output-syms]
-  (let [input-syms (keys input-map)]
-    (loop [results input-map
-           todo (eval-order flow input-syms output-syms)]
-      (if (seq todo)
-        (let [sym (first todo)]
-          (cond (contains? results sym)
-                  (recur results (rest todo))
-                (contains? (:fn-map flow) sym)
-                  (recur (assoc results sym (call sym flow results))
-                         (rest todo))
-                :else
-                  (throw (ex-info (str "Missing value for " sym)
-                                  {:symbol sym
-                                   :output-syms output-syms
-                                   :results results}))))
-        results))))
+  ([flow input-map]
+     (run flow input-map (keys (:fn-map flow))))
+  ([flow input-map output-syms]
+     (let [input-syms (keys input-map)]
+       (loop [results input-map
+              todo (eval-order flow input-syms output-syms)]
+         (if (seq todo)
+           (let [sym (first todo)]
+             (cond (contains? results sym)
+                   (recur results (rest todo))
+                   (contains? (:fn-map flow) sym)
+                   (recur (assoc results sym (call sym flow results))
+                          (rest todo))
+                   :else
+                   (throw (ex-info (str "Missing value for " sym)
+                                   {:symbol sym
+                                    :output-syms output-syms
+                                    :results results}))))
+           results)))))
 
 (defn- sorted-bindings [flow input-syms output-syms]
   (loop [let-bindings []
