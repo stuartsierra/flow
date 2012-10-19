@@ -23,6 +23,8 @@ I also wanted to do something new with the [dependency graph] library I wrote fo
 
 Flow is on [Clojars](https://clojars.org/com.stuartsierra/flow)
 
+Latest release is [0.0.1](https://github.com/stuartsierra/flow/tree/flow-0.0.1)
+
 Leiningen dependency information:
 
     [com.stuartsierra/flow "0.0.1"]
@@ -152,6 +154,10 @@ And see the results:
 
 It's a little weird to use symbols, instead of keywords, in the input/output maps. Doing so made the implementation much simpler, because I'm always dealing with symbols everywhere instead of converting between symbols and keywords. One of the first improvements I'd like to make is supporting keywords.
 
+
+## Change Log ##
+
+* Release [0.0.1](https://github.com/stuartsierra/flow/tree/flow-0.0.1) on 12-Oct-2012
 
 
 ## Copyright & License ##
