@@ -29,3 +29,12 @@
   "Elapsed time: 17.137 msecs"
   nil
   )
+
+(comment ;; experimenting with coercions
+  (defn- keyword [sym]
+    {:pre [(symbol? sym)]}
+    (clojure.core/keyword (name sym)))
+
+  (defn- symbol [key]
+    {:pre [(keyword? key)]}
+    (clojure.core/symbol (name key))))
