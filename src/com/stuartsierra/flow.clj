@@ -11,30 +11,31 @@
             [clojure.java.io :as io]))
 
 (comment
-  ;; flow-map structure
+  ;; structure of a flow
   {:output ^{::inputs #{:input1 :input2}}
-              (fn [map] ...returns output...)}
-  )
+              (fn [{:keys [input1 input2]}]
+                ;; returns value for :output
+                )})
 
-(defn- valid-flow-map? [flow-map]
-  (when-not (map? flow-map)
-    (throw (ex-info "flow-map must be a map" {:flow-map flow-map})))
-  (doseq [[k f] flow-map]
+(defn- valid-flow? [flow]
+  (when-not (map? flow)
+    (throw (ex-info "flow must be a map" {:flow flow})))
+  (doseq [[k f] flow]
     (when-not (keyword? k)
-      (throw (ex-info "flow-map keys must be keywords" {:key k})))
+      (throw (ex-info "flow keys must be keywords" {:key k})))
     (when-not (fn? f)
-      (throw (ex-info "flow-map values must be functions"
+      (throw (ex-info "flow values must be functions"
                       {:value f})))
     (when-not (::inputs (meta f))
-      (throw (ex-info "flow-map functions must have ::inputs metadata"
+      (throw (ex-info "flow functions must have ::inputs metadata"
                       {:meta (meta f)}))))
   true)
 
-(defn- flow-map-graph [flow-map]
+(defn- flow-graph [flow]
   (reduce
    (fn [graph [k f]]
      (reduce #(dep/depend %1 k %2) graph (::inputs (meta f))))
-   (dep/graph) flow-map))
+   (dep/graph) flow))
 
 (defn- required-keys [work-graph inputs outputs]
   (apply set/union
@@ -46,24 +47,31 @@
   {:pre [(symbol? symbol)]}
   (clojure.core/keyword (name symbol)))
 
-(defmacro flow-map-fn
-  "Returns a function suitable for use in a flow-map. The function will
+(defn with-inputs
+  "Returns function f with metadata specifying it takes the given
+  inputs, a collection of keywords."
+  [input-keys f]
+  (with-meta f {::inputs (set input-keys)}))
+
+(defmacro flow-fn
+  "Returns a function suitable for use in a flow. The function will
   take a single map argument, which will be destructured as with
   {:keys []}. inputs is a vector of symbols to destructure out of the
   map."
   [inputs & body]
   {:pre [(vector? inputs)
          (every? symbol? inputs)]}
-  `(with-meta
-     (fn [{:keys ~inputs}] ~@body)
-     {::inputs ~(set (map keyword inputs))}))
+  `(with-inputs ~(set (map keyword inputs))
+     (fn [{:keys ~inputs}] ~@body)))
 
-(defn flow-map-const [output]
-  (with-meta (constantly output)
-    {::inputs #{}}))
+(defn const
+  "Returns a function, for use in a flow, which ignores all input and
+  always returns the same output value."
+  [output]
+  (with-inputs #{} (constantly output)))
 
-(defmacro flow-map
-  "Returns a flow-map from pairs like:
+(defmacro flow
+  "Returns a flow from pairs like:
 
       :output-key ([inputs] body...)
   "
@@ -71,44 +79,44 @@
   {:pre [(even? (count pairs))]}
   (into {} (map (fn [[output fntail]]
                   {:pre [(keyword? output)]}
-                  [output `(flow-map-fn ~@fntail)])
+                  [output `(flow-fn ~@fntail)])
                 (partition 2 pairs))))
 
-(defn- todo-keys [flow-map inputs outputs]
-  (let [graph (flow-map-graph flow-map)
+(defn- todo-keys [flow inputs outputs]
+  (let [graph (flow-graph flow)
         comparator (dep/topo-comparator graph)
         work-graph (reduce dep/remove-all graph inputs)
         required (required-keys work-graph inputs outputs)]
     (sort comparator required)))
 
-(defn- run-flow-map [flow-map todo input-map]
+(defn- run-flow [flow todo input-map]
   (reduce (fn [output-map key]
-            (if-let [f (get flow-map key)]
+            (if-let [f (get flow key)]
               (assoc output-map key (f output-map))
               (throw (ex-info (str "Missing value for " key)
                               {:key key}))))
           input-map todo))
 
 (defn run
-  "Executes a flow-map using the given input map. Optional third
+  "Executes a flow using the given input map. Optional third
   argument is a collection of keywords desired in the output map; if
-  not present defaults to all keys in the flow-map."
-  ([flow-map input-map]
-     (run flow-map input-map (keys flow-map)))
-  ([flow-map input-map outputs]
-     {:pre [(valid-flow-map? flow-map)]}
-     (let [todo (todo-keys flow-map (keys input-map) outputs)]
-       (run-flow-map flow-map todo input-map))))
+  not present defaults to all keys in the flow."
+  ([flow input-map]
+     (run flow input-map (keys flow)))
+  ([flow input-map outputs]
+     {:pre [(valid-flow? flow)]}
+     (let [todo (todo-keys flow (keys input-map) outputs)]
+       (run-flow flow todo input-map))))
 
 (defn compile
-  "Returns a function which executes the flow-map. The returned
-  function will take a single argument, a map containing the keys in
-  inputs. Optional third argument is a collection of keywords desired
-  in the output map; if not present defaults to all keys in the
-  flow-map."
-  ([flow-map inputs]
-     (compile flow-map inputs (keys flow-map)))
-  ([flow-map inputs outputs]
-     (let [todo (todo-keys flow-map inputs outputs)]
+  "Returns a function which executes the flow. The returned function
+  will take a single argument, a map containing keywords which will be
+  provided as input to the flow. Optional third argument is a
+  collection of keywords desired in the output map; if not present
+  defaults to all keys in the flow."
+  ([flow inputs]
+     (compile flow inputs (keys flow)))
+  ([flow inputs outputs]
+     (let [todo (todo-keys flow inputs outputs)]
        (fn [input-map]
-         (run-flow-map flow-map todo input-map)))))
+         (run-flow flow todo input-map)))))

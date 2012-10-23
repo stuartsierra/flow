@@ -10,17 +10,17 @@
         clojure.test))
 
 (def f1
-  (flow-map
+  (flow
    :c ([a] (+ a 2))
    :d ([a b] (+ a b))
    :e ([c d] (+ c d))
    :f ([] 7)))
 
 (def f2
-  (assoc f1 :c (flow-map-const 100)))
+  (assoc f1 :c (const 100)))
 
 (def f3
-  (assoc f1 :c (flow-map-fn [a b] (+ 1000 a b))))
+  (assoc f1 :c (flow-fn [a b] (+ 1000 a b))))
 
 (deftest run-complete
   (is (= {:f 7 :e 6, :c 3, :d 3, :a 1, :b 2}

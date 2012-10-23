@@ -12,7 +12,7 @@
       (intern *ns* 'reset reset))
     result))
 
-(def flow-map-1
+(def flow-1
   {:c (with-meta (fn [{:keys [a b]}] (+ a b))
         {::flow/inputs #{:a :b}})
    :d (with-meta (fn [{:keys [b c]}] (+ b c))
@@ -20,15 +20,15 @@
    :e (with-meta (fn [{:keys [c d]}] (+ c d))
         {::flow/inputs #{:c :d}})})
 
-(def flow-map-2
-  (flow/flow-map
+(def flow-2
+  (flow/flow
    :c ([a b] (+ a b))
    :d ([b c] (+ b c))
    :e ([c d] (+ c d))))
 
-;; (def f1 (flow/flow-map-fn flow-map-1))
+;; (def f1 (flow/flow-fn flow-1))
 
-;; (def f2 (flow/flow-map-fn flow-map-2))
+;; (def f2 (flow/flow-fn flow-2))
 
 ;; (def f1c (flow/compile com.stuartsierra.flow-test/f1 [:a :b]))
 ;; #'user/f1c
