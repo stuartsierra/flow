@@ -110,10 +110,11 @@
 
 (defn compile
   "Returns a function which executes the flow. The returned function
-  will take a single argument, a map containing keywords which will be
-  provided as input to the flow. Optional third argument is a
-  collection of keywords desired in the output map; if not present
-  defaults to all keys in the flow."
+  will take a single argument, a map from keywords to values. The
+  argument 'inputs' is the collection of keys which must be provided
+  in that map. Optional third argument is a collection of keywords
+  desired in the output map; if not present defaults to all keys in
+  the flow."
   ([flow inputs]
      (compile flow inputs (keys flow)))
   ([flow inputs outputs]
