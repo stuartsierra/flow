@@ -46,3 +46,14 @@
 ;; "Elapsed time: 21.219 msecs"
 ;; "Elapsed time: 20.001 msecs"
 ;; nil
+
+(comment
+  (defmacro flow-let [bindings-and-return]
+    {:pre [(odd? (count pairs))]}
+    (let [bindings (butlast bindings)
+          return (last bindings-and-return)
+          graph (reduce (fn [graph [output [inputs & body]]]
+                          (reduce #(dep/depend %1 output %2)
+                                  inputs))
+                        (dep/graph) bindings)
+          todo ])))
