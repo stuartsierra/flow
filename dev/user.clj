@@ -29,3 +29,20 @@
 ;; (def f1 (flow/flow-map-fn flow-map-1))
 
 ;; (def f2 (flow/flow-map-fn flow-map-2))
+
+;; (def f1c (flow/compile com.stuartsierra.flow-test/f1 [:a :b]))
+;; #'user/f1c
+;; user> (dotimes [j 5] (time (dotimes [i 10000] (flow/run com.stuartsierra.flow-test/f1 {:a 1 :b 2}))))
+;; "Elapsed time: 623.644 msecs"
+;; "Elapsed time: 614.011 msecs"
+;; "Elapsed time: 628.677 msecs"
+;; "Elapsed time: 610.751 msecs"
+;; "Elapsed time: 617.071 msecs"
+;; nil
+;; user> (dotimes [j 5] (time (dotimes [i 10000] (f1c {:a 1 :b 2}))))
+;; "Elapsed time: 34.631 msecs"
+;; "Elapsed time: 30.742 msecs"
+;; "Elapsed time: 19.598 msecs"
+;; "Elapsed time: 21.219 msecs"
+;; "Elapsed time: 20.001 msecs"
+;; nil
