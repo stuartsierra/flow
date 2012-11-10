@@ -98,3 +98,20 @@
      (let [todo (todo-keys flow inputs outputs)]
        (fn [input-map]
          (run-flow flow todo input-map)))))
+
+(defmacro flow-let [bindings & body]
+  {:pre [(vector? bindings)
+         (even? (count bindings))]}
+  (let [expr-map (reduce (fn [m [output [_ & body]]]
+                           (assoc m output (cons 'do body)))
+                         {} (partition 2 bindings))
+        graph (reduce (fn [graph [output [inputs & _]]]
+                        (reduce #(dep/depend %1 output %2)
+                                graph inputs))
+                      (dep/graph) (partition 2 bindings))
+        todo (dep/topo-sort graph)
+        let-bindings (mapcat (fn [key]
+                               [key (get expr-map key)])
+                             todo)]
+    `(let [~@let-bindings]
+       ~@body)))
