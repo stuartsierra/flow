@@ -81,3 +81,19 @@
 (deftest compiled-modified
   (is (= {:f 7 :e 1006, :c 1003, :d 3, :a 1, :b 2}
          (f3-ab-all {:a 1 :b 2}))))
+
+(deftest t-flow-let
+  (is (= {:a 3, :b 2}
+         (flow-let [a ([b] (+ b 1))
+                         b ([] 2)]
+           {:a a :b b})))
+  (is (= {:a 3, :b 2, :c 15}
+         (flow-let [a ([b] (+ b 1))
+                         b ([] 2)
+                         c ([a b] (+ a b 10))]
+           {:a a :b b :c c})))
+  (is (= {:a 3, :b 2, :c 15}
+         (flow-let [c ([a b] (+ a b 10))
+                         a ([b] (+ b 1))
+                         b ([] 2)]
+           {:a a :b b :c c}))))
