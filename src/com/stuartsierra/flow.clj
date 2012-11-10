@@ -40,10 +40,9 @@
   (with-meta f {::inputs (set input-keys)}))
 
 (defmacro flow-fn
-  "Returns a function suitable for use in a flow. The function will
-  take a single map argument, which will be destructured as with
-  {:keys []}. inputs is a vector of symbols to destructure out of the
-  map."
+  "Returns a function for use in a flow. The function will take a
+  single map argument. inputs is a vector of symbols to destructure
+  out of the map as with {:keys [...]}." 
   [inputs & body]
   {:pre [(vector? inputs)
          (every? symbol? inputs)]}
@@ -78,9 +77,9 @@
           input-map todo))
 
 (defn run
-  "Executes a flow using the given input map. Optional third
-  argument is a collection of keywords desired in the output map; if
-  not present defaults to all keys in the flow."
+  "Executes a flow using the given input map. Optional third argument
+  is a collection of keywords desired in the output map; if not
+  present defaults to all keys in the flow."
   ([flow input-map]
      (run flow input-map (keys flow)))
   ([flow input-map outputs]
@@ -89,11 +88,10 @@
 
 (defn compile
   "Returns a function which executes the flow. The returned function
-  will take a single argument, a map from keywords to values. The
-  argument 'inputs' is the collection of keys which must be provided
-  in that map. Optional third argument is a collection of keywords
-  desired in the output map; if not present defaults to all keys in
-  the flow."
+  will take a single argument, a map from keywords to values. inputs
+  is the collection of keys which must be provided in that map.
+  Optional third argument outputs is a collection of keywords desired
+  in the output map; if not present defaults to all keys in the flow."
   ([flow inputs]
      (compile flow inputs (keys flow)))
   ([flow inputs outputs]
