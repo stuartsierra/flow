@@ -17,20 +17,6 @@
                 ;; returns value for :output
                 )})
 
-(defn- valid-flow? [flow]
-  (when-not (map? flow)
-    (throw (ex-info "flow must be a map" {:flow flow})))
-  (doseq [[k f] flow]
-    (when-not (keyword? k)
-      (throw (ex-info "flow keys must be keywords" {:key k})))
-    (when-not (fn? f)
-      (throw (ex-info "flow values must be functions"
-                      {:value f})))
-    (when-not (::inputs (meta f))
-      (throw (ex-info "flow functions must have ::inputs metadata"
-                      {:meta (meta f)}))))
-  true)
-
 (defn- flow-graph [flow]
   (reduce
    (fn [graph [k f]]
@@ -63,12 +49,6 @@
          (every? symbol? inputs)]}
   `(with-inputs ~(set (map keyword inputs))
      (fn [{:keys ~inputs}] ~@body)))
-
-(defn const
-  "Returns a function, for use in a flow, which ignores all input and
-  always returns the same output value."
-  [output]
-  (with-inputs #{} (constantly output)))
 
 (defmacro flow
   "Returns a flow from pairs like:
@@ -104,7 +84,6 @@
   ([flow input-map]
      (run flow input-map (keys flow)))
   ([flow input-map outputs]
-     {:pre [(valid-flow? flow)]}
      (let [todo (todo-keys flow (keys input-map) outputs)]
        (run-flow flow todo input-map))))
 

@@ -17,7 +17,7 @@
    :f ([] 7)))
 
 (def f2
-  (assoc f1 :c (const 100)))
+  (assoc f1 :c (constantly 100)))
 
 (def f3
   (assoc f1 :c (flow-fn [a b] (+ 1000 a b))))
