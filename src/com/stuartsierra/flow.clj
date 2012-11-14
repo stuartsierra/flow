@@ -18,10 +18,10 @@
                 )})
 
 (defn- flow-graph [flow]
-  (reduce
-   (fn [graph [k f]]
-     (reduce #(dep/depend %1 k %2) graph (::inputs (meta f))))
-   (dep/graph) flow))
+  (reduce (fn [graph [output f]]
+            (reduce (fn [g input] (dep/depend g output input))
+                    graph (::inputs (meta f))))
+          (dep/graph) flow))
 
 (defn- required-keys [work-graph inputs outputs]
   (apply set/union
@@ -87,11 +87,12 @@
        (run-flow flow todo input-map))))
 
 (defn compile
-  "Returns a function which executes the flow. The returned function
-  will take a single argument, a map from keywords to values. inputs
-  is the collection of keys which must be provided in that map.
-  Optional third argument outputs is a collection of keywords desired
-  in the output map; if not present defaults to all keys in the flow."
+  "Returns a function which executes the flow, precomputing the steps
+  necessary. The returned function will take a single argument, a map
+  from keywords to values. inputs is the collection of keys which must
+  be provided in that map. Optional third argument outputs is a
+  collection of keywords desired in the output map; if not present
+  defaults to all keys in the flow."
   ([flow inputs]
      (compile flow inputs (keys flow)))
   ([flow inputs outputs]
