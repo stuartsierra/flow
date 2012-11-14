@@ -22,6 +22,12 @@
 (def f3
   (assoc f1 :c (flow-fn [a b] (+ 1000 a b))))
 
+(def f4
+  {:out/c (with-inputs #{:in/a}
+            (fn [{a :in/a}] (+ a 10)))
+   :out/d (with-inputs #{:in/b}
+            (fn [{a :in/a b :in/b}] (+ a b)))})
+
 (def f1-ab-all (compile f1 [:a :b]))
 (def f1-ab-c (compile f1 [:a :b] [:c]))
 (def f1-ab-cd (compile f1 [:a :b] [:c :d]))
@@ -97,3 +103,7 @@
                          a ([b] (+ b 1))
                          b ([] 2)]
            {:a a :b b :c c}))))
+
+(deftest namespaced-keys
+  (is (= {:out/c 11, :out/d 3, :in/b 2, :in/a 1}
+         (run f4 {:in/a 1 :in/b 2}))))
