@@ -2,7 +2,8 @@
   (:use clojure.tools.namespace.repl
         clojure.repl
         clojure.pprint)
-  (:require [clojure.test :as test]
+  (:require [clojure.set :as set]
+            [clojure.test :as test]
             [com.stuartsierra.flow :as flow]))
 
 (defn reset []

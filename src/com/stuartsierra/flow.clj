@@ -5,7 +5,7 @@
 ;; http://www.eclipse.org/legal/epl-v10.html
 
 (ns com.stuartsierra.flow
-  (:refer-clojure :exclude (keyword compile))
+  (:refer-clojure :exclude (compile))
   (:require [clojure.set :as set]
             [clojure.tools.namespace.dependency :as dep]
             [clojure.java.io :as io]))
@@ -29,9 +29,16 @@
          (map #(dep/transitive-dependencies work-graph %)
               outputs)))
 
-(defn- keyword [symbol]
+(defn- sym->key [symbol]
   {:pre [(symbol? symbol)]}
-  (clojure.core/keyword (name symbol)))
+  (keyword (name symbol)))
+
+(defn- destructured-map-keys [m]
+  (set/union
+   (set (map sym->key (:keys m)))
+   (set (:syms m))
+   (set (map name (:strs m)))
+   (set (vals (dissoc m :keys :syms :strs :or :as)))))
 
 (defn with-inputs
   "Returns function f with metadata specifying it takes the given
@@ -41,23 +48,26 @@
 
 (defmacro flow-fn
   "Returns a function for use in a flow. The function will take a
-  single map argument. inputs is a vector of symbols to destructure
-  out of the map as with {:keys [...]}." 
+  single map argument. inputs is either a destructuring map form or a
+  vector of symbols to destructure as with {:keys [...]}." 
   [inputs & body]
-  {:pre [(vector? inputs)
-         (every? symbol? inputs)]}
-  `(with-inputs ~(set (map keyword inputs))
-     (fn [{:keys ~inputs}] ~@body)))
+  (let [input-structure (if (vector? inputs)
+                          {:keys inputs}
+                          inputs)]
+    `(with-inputs ~(destructured-map-keys input-structure)
+       (fn [~input-structure] ~@body))))
 
 (defmacro flow
   "Returns a flow from pairs like:
 
-      :output-key ([inputs] body...)
+      output (inputs body...)
+
+  inputs is either a destructuring map form or a vector of symbols to
+  destructure as with {:keys [...]}.
   "
   [& pairs]
   {:pre [(even? (count pairs))]}
   (into {} (map (fn [[output fntail]]
-                  {:pre [(keyword? output)]}
                   [output `(flow-fn ~@fntail)])
                 (partition 2 pairs))))
 
