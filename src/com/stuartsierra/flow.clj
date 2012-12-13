@@ -110,7 +110,15 @@
        (fn [input-map]
          (run-flow flow todo input-map)))))
 
-(defmacro flow-let [bindings & body]
+(defmacro flow-let
+  "Evaluates body with local bindings. A binding is a pair like
+
+      output-sym ([input-syms*] body*)
+
+  Bindings may appear in any order. The input-syms for each body
+  specify which other bindings the body depends on. Bindings will be
+  executed in dependency order."
+  [bindings & body]
   {:pre [(vector? bindings)
          (even? (count bindings))]}
   (let [expr-map (reduce (fn [m [output [_ & body]]]

@@ -5,40 +5,53 @@ Function definitions derived from graph declarations.
 **ALPHA RELEASE**
 
 
+
 ## Introduction ##
 
 I was at [Strange Loop 2012] in Saint Louis, where the [Prismatic]
 team did a talk about their [Graph] library for building up complex
 processes in a declarative style. At the time, Prismatic had not yet
-released Graph as open-source, and I wanted something like it, so I
-wrote my own.
-
-[Strange Loop 2012]: https://thestrangeloop.com/
-[Prismatic]: http://getprismatic.com/
-[Graph]: http://blog.getprismatic.com/blog/2012/10/1/prismatics-graph-at-strange-loop.html
+released Graph as open-source. I wanted something like it, so I wrote
+my own.
 
 I also wanted to do something new with the [dependency graph] library
 I wrote for [tools.namespace] 0.2.0. Flow turned out to be pretty easy
 given a data structure to represent a DAG.
 
+[Strange Loop 2012]: https://thestrangeloop.com/
+[Prismatic]: http://getprismatic.com/
+[Graph]: http://blog.getprismatic.com/blog/2012/10/1/prismatics-graph-at-strange-loop.html
 [dependency graph]: https://github.com/clojure/tools.namespace/blob/tools.namespace-0.2.0/src/main/clojure/clojure/tools/namespace/dependency.clj
 [tools.namespace]: https://github.com/clojure/tools.namespace
 
 
+
 ## Releases ## 
 
-Flow is on [Clojars](https://clojars.org/com.stuartsierra/flow)
+Flow is on [Clojars]
 
-Latest release is [0.0.1](https://github.com/stuartsierra/flow/tree/flow-0.0.1)
+Latest release is [0.1.0]
 
-Leiningen dependency information:
+[Leiningen] dependency information:
 
-    [com.stuartsierra/flow "0.0.1"]
+    [com.stuartsierra/flow "0.1.0"]
+
+The [Git master] branch is at version 0.1.1-SNAPSHOT.
+
+
+[Leiningen]: https://github.com/technomancy/leiningen
+[Clojars]: https://clojars.org/com.stuartsierra/flow
+[0.1.0]: https://github.com/stuartsierra/flow/tree/flow-0.1.0
+[Git master]: https://github.com/stuartsierra/flow
+
 
 
 ## Usage ##
 
-**Flow** is a small library for building up functions as discrete steps without specifying the order of those steps. This can help clarify functions that have lots of `let`-bindings. For example, this function:
+**Flow** is a small library for building up functions as discrete
+steps without specifying the order of those steps. This can help
+clarify functions that have lots of `let`-bindings. For example, this
+function:
 
     (defn process [alpha beta]
       (let [gamma (subprocess-a alpha beta)
@@ -194,9 +207,37 @@ example could be written:
                    (+ (* 100 alpha) beta))))
 
 
+
+## Flow-let ##
+
+Small, self-contained Flows can be expressed as `flow-let`, which
+expands to a series of ordinary `let` bindings:
+
+    (flow/flow-let
+       [alpha   ([] 1)
+        beta    ([] 2)
+        result  ([gamma delta epsilon]
+                   (subprocess-d gamma delta epsilon))
+        gamma   ([alpha beta]  (subprocess-a alpha beta))
+        delta   ([alpha gamma] (subprocess-b alpha gamma))
+        epsilon ([gamma delta] (subprocess-c gamma delta))]
+     (str "The result is " result))
+    ;;=> "The result is 14"
+
+
+
+
 ## Change Log ##
 
-* Release [0.0.1](https://github.com/stuartsierra/flow/tree/flow-0.0.1) on 12-Oct-2012
+* Release [0.1.0] on 14-Dec-2012
+  * Complete rewrite
+  * All breaking changes
+  * Flows are normal maps
+* Release [0.0.1] on 12-Oct-2012
+
+[0.1.0]: https://github.com/stuartsierra/flow/tree/flow-0.1.0
+[0.0.1]: https://github.com/stuartsierra/flow/tree/flow-0.0.1
+
 
 
 ## Copyright & License ##

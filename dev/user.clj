@@ -75,5 +75,15 @@
 (compute-gamma {:alpha 1 :beta 2})
 ;;=> {:gamma 3, :alpha 1, :beta 2}
 
-)  ; end comment
+(flow/flow-let
+   [alpha   ([] 1)
+    beta    ([] 2)
+    result  ([gamma delta epsilon]
+               (subprocess-d gamma delta epsilon))
+    gamma   ([alpha beta]  (subprocess-a alpha beta))
+    delta   ([alpha gamma] (subprocess-b alpha gamma))
+    epsilon ([gamma delta] (subprocess-c gamma delta))]
+ (str "The result is " result))
+;;=> "The result is 14"
 
+)  ; end comment
