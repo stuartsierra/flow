@@ -48,5 +48,43 @@
 ;; "Elapsed time: 20.001 msecs"
 ;; nil
 
+(def subprocess-a +)
+(def subprocess-b +)
+(def subprocess-c +)
+(def subprocess-d +)
+
+(def process-flow
+  (flow/flow
+   :result  ([gamma delta epsilon]
+               (subprocess-d gamma delta epsilon))
+   :gamma   ([alpha beta]  (subprocess-a alpha beta))
+   :delta   ([alpha gamma] (subprocess-b alpha gamma))
+   :epsilon ([gamma delta] (subprocess-c gamma delta))))
+
+(def compute (flow/compile process-flow [:alpha :beta]))
+
+(def compute-gamma
+  (flow/compile process-flow [:alpha :beta] [:gamma]))
+
 (comment
-)
+
+(flow/run process-flow {:alpha 1 :beta 2} [:result])
+;;=> {:result 14, :epsilon 7, :delta 4, :gamma 3,
+;;    :alpha 1, :beta 2}
+
+(flow/run process-flow {:alpha 1 :beta 2} [:gamma :delta])
+;;=> {:delta 4, :gamma 3, :alpha 1, :beta 2}
+
+(flow/run process-flow {:alpha 1 :beta 2 :gamma 30} [:result])
+;;=> {:result 122, :epsilon 61, :delta 31, :alpha 1,
+;;    :beta 2, :gamma 30}
+
+(compute {:alpha 1 :beta 2})
+;;=> {:result 14, :epsilon 7, :delta 4, :gamma 3,
+;;    :alpha 1, :beta 2}
+
+(compute-gamma {:alpha 1 :beta 2})
+;;=> {:gamma 3, :alpha 1, :beta 2}
+
+)  ; end comment
+
