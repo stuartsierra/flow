@@ -1,3 +1,5 @@
+;; I use this file for development and testing.
+
 (ns user
   (:use clojure.tools.namespace.repl
         clojure.repl
@@ -5,13 +7,6 @@
   (:require [clojure.set :as set]
             [clojure.test :as test]
             [com.stuartsierra.flow :as flow]))
-
-(defn reset []
-  (let [result (refresh)]
-    (when-not (= :ok result)
-      (in-ns 'user)
-      (intern *ns* 'reset reset))
-    result))
 
 (def flow-1
   {:c (with-meta (fn [{:keys [a b]}] (+ a b))
@@ -27,26 +22,7 @@
    :d ([b c] (+ b c))
    :e ([c d] (+ c d))))
 
-;; (def f1 (flow/flow-fn flow-1))
-
-;; (def f2 (flow/flow-fn flow-2))
-
-;; (def f1c (flow/compile com.stuartsierra.flow-test/f1 [:a :b]))
-;; #'user/f1c
-;; user> (dotimes [j 5] (time (dotimes [i 10000] (flow/run com.stuartsierra.flow-test/f1 {:a 1 :b 2}))))
-;; "Elapsed time: 623.644 msecs"
-;; "Elapsed time: 614.011 msecs"
-;; "Elapsed time: 628.677 msecs"
-;; "Elapsed time: 610.751 msecs"
-;; "Elapsed time: 617.071 msecs"
-;; nil
-;; user> (dotimes [j 5] (time (dotimes [i 10000] (f1c {:a 1 :b 2}))))
-;; "Elapsed time: 34.631 msecs"
-;; "Elapsed time: 30.742 msecs"
-;; "Elapsed time: 19.598 msecs"
-;; "Elapsed time: 21.219 msecs"
-;; "Elapsed time: 20.001 msecs"
-;; nil
+;;; examples from README:
 
 (def subprocess-a +)
 (def subprocess-b +)
@@ -65,6 +41,19 @@
 
 (def compute-gamma
   (flow/compile process-flow [:alpha :beta] [:gamma]))
+
+(def process-flow-2
+  (assoc process-flow
+    :epsilon (flow/with-inputs [:alpha :beta]
+               (fn [{:keys [alpha beta]}]
+                 (+ (* 100 alpha) beta)))))
+
+(def process-flow-2
+  (assoc process-flow
+    :epsilon (flow/flow-fn [alpha beta]
+               (+ (* 100 alpha) beta))))
+
+
 
 (comment
 

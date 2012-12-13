@@ -52,11 +52,11 @@ Could be written as a Flow like this:
 
     (def process-flow
       (flow/flow
-        result  ([gamma delta epsilon]
+       :result  ([gamma delta epsilon]
                    (subprocess-d gamma delta epsilon))
-        gamma   ([alpha beta]  (subprocess-a alpha beta))
-        delta   ([alpha gamma] (subprocess-b alpha gamma))
-        epsilon ([gamma delta] (subprocess-c gamma delta))))
+       :gamma   ([alpha beta]  (subprocess-a alpha beta))
+       :delta   ([alpha gamma] (subprocess-b alpha gamma))
+       :epsilon ([gamma delta] (subprocess-c gamma delta))))
           
 The body of a Flow consists of pairs of an *output* and a *fntail*.
 
@@ -133,32 +133,65 @@ If you have the [Graphviz] program installed, you can generate
 visualizations of a flow. The `dot` function prints out a
 Graphviz-compatible representation of the flow:
 
-    (flow/dot process-flow 'myflow)
-    ;; digraph myflow {
-    ;;    beta -> gamma ;
-    ;;    gamma -> epsilon ;
-    ;;    gamma -> result ;
-    ;;    gamma -> delta ;
-    ;;    alpha -> gamma ;
-    ;;    alpha -> delta ;
-    ;;    epsilon -> result ;
-    ;;    delta -> epsilon ;
-    ;;    delta -> result ;
+    (flow/dot process-flow)
+    ;; digraph "flow" {
+    ;;    "alpha" -> "delta" ;
+    ;;    "alpha" -> "gamma" ;
+    ;;    "epsilon" -> "result" ;
+    ;;    "delta" -> "epsilon" ;
+    ;;    "delta" -> "result" ;
+    ;;    "beta" -> "gamma" ;
+    ;;    "gamma" -> "epsilon" ;
+    ;;    "gamma" -> "result" ;
+    ;;    "gamma" -> "delta" ;
     ;; }
 
 Write that out to a file:
 
-    (flow/write-dotfile process-flow 'myflow "myflow.dot")
+    (flow/write-dotfile process-flow "flow.dot")
 
 Then run Graphviz:
 
-    $ dot -Tpng -o myflow.png myflow.dot
+    $ dot -Tpng -o flow.png flow.dot
 
 And see the results:
 
 ![flow visualization](https://raw.github.com/stuartsierra/flow/master/myflow.png)
 
 [Graphviz]: http://www.graphviz.org/
+
+
+
+## Constructing Flows ##
+
+A Flow is just a map whose values are functions. You can construct
+this map youself or `assoc` new functions into an existing Flow.
+
+Each function must take a single argument: the map of inputs and
+accumulated results. The function returns a value to be assoc'd into
+the results map. Each function must also have metadata which describes
+the result keys it depends on; if this metadata is missing it means
+the function doesn't depend on anything. The `with-inputs` function
+will add this metadata to any function:
+
+    (def process-flow-2
+      (assoc process-flow
+        :epsilon (flow/with-inputs [:alpha :beta]
+                   (fn [{:keys [alpha beta]}]
+                     (+ (* 100 alpha) beta)))))
+
+    (flow/run process-flow-2 {:alpha 1 :beta 2})
+    ;;=> {:result 109, :epsilon 102, :delta 4,
+    ;;    :gamma 3, :alpha 1, :beta 2}
+
+The `flow-fn` macro is a syntactic helper to create a function with
+the necessary metadata and destructure the input map. The previous
+example could be written:
+
+    (def process-flow-2
+      (assoc process-flow
+        :epsilon (flow/flow-fn [alpha beta]
+                   (+ (* 100 alpha) beta))))
 
 
 ## Change Log ##
