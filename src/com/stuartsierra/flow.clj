@@ -126,3 +126,29 @@
                              todo)]
     `(let [~@let-bindings]
        ~@body)))
+
+(defn dot
+  "Prints a representation of the flow to standard output,
+  suitable for input to the Graphviz 'dot' program. Options are
+  key-value pairs from:
+
+    :graph-name   string/symbol/keyword naming the graph. Must not be
+                  a Graphiviz reserved word such as \"graph\"."
+  [flow & options]
+  (let [{:keys [graph-name]
+         :or {graph-name "flow"}} options
+        graph (flow-graph flow)]
+    (println "digraph" (pr-str (name graph-name)) "{")
+    (doseq [sym (dep/nodes graph)
+            dep (dep/immediate-dependents graph sym)]
+      (println "  " (pr-str (name sym)) "->" (pr-str (name dep)) ";"))
+    (println "}")))
+
+(defn write-dotfile
+  "Writes a Graphviz dotfile for a Flow. options are the same as for
+  'dot'."
+  [flow file-name & options]
+  (with-open [wtr (io/writer file-name)]
+    (binding [*out* wtr]
+      (apply dot flow options))))
+
