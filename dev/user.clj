@@ -6,7 +6,8 @@
         clojure.pprint)
   (:require [clojure.set :as set]
             [clojure.test :as test]
-            [com.stuartsierra.flow :as flow]))
+            [com.stuartsierra.flow :as flow]
+            [com.stuartsierra.flow.component :as component]))
 
 (def flow-1
   {:c (with-meta (fn [{:keys [a b]}] (+ a b))
@@ -87,3 +88,29 @@
 ;;=> "The result is 14"
 
 )  ; end comment
+
+(defn safe-prn [& args]
+  (locking safe-prn
+    (apply prn args)
+    (flush)))
+
+(defn dumb-component [name delay deps]
+  (component/with-deps deps
+    (reify component/Lifecycle
+      (start [this]
+        (future
+          (safe-prn :starting name)
+          (Thread/sleep delay)
+          [:started name]))
+      (stop [this]
+        (future
+          (safe-prn :stopping name)
+          (Thread/sleep delay)
+          [:stopped name])))))
+
+(def components1
+  {::a (dumb-component 'a 100 [])
+   ::b (dumb-component 'b 200 [])
+   ::c (dumb-component 'c 400 [::a ::b])
+   ::d (dumb-component 'd 800 [::a ::b])
+   ::e (dumb-component 'e 1600 [::b ::c])})
