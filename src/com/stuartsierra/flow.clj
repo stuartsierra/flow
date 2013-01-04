@@ -8,7 +8,8 @@
   (:refer-clojure :exclude (compile))
   (:require [clojure.set :as set]
             [clojure.tools.namespace.dependency :as dep]
-            [clojure.java.io :as io]))
+            [clojure.java.io :as io]
+            [lazymap.core :as lazy]))
 
 (comment
   ;; structure of a flow
@@ -86,6 +87,15 @@
                               {:key key}))))
           input-map todo))
 
+(defn- run-flow-lazy [flow todo input-map]
+  (reduce (fn [output-map key]
+            (if-let [f (get flow key)]
+              (lazy/lazy-assoc output-map key (f output-map))
+              (throw (ex-info (str "Missing value for " key)
+                              {:key key}))))
+          (lazy/create-lazy-map input-map)
+          todo))
+
 (defn run
   "Executes a flow using the given input map. Optional third argument
   is a collection of keywords desired in the output map; if not
@@ -95,6 +105,16 @@
   ([flow input-map outputs]
      (let [todo (todo-keys flow (keys input-map) outputs)]
        (run-flow flow todo input-map))))
+
+(defn run-lazy
+  "Returns a lazy map of a flow using the given input map. Optional third argument
+  is a collection of keywords desired in the output map; if not
+  present defaults to all keys in the flow."
+  ([flow input-map]
+     (run-lazy flow input-map (keys flow)))
+  ([flow input-map outputs]
+     (let [todo (todo-keys flow (keys input-map) outputs)]
+       (run-flow-lazy flow todo input-map))))
 
 (defn compile
   "Returns a function which executes the flow, precomputing the steps
